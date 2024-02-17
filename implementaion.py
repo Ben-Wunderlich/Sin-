@@ -15,8 +15,8 @@ dormant_waves = []
 default_incr = 1
 progress_incr = default_incr
 
-key_factors = [2,3,2081]
-key_factors.sort() # for later, could remove if feel like it
+# see wave_factos for keys
+#key_factors = [2,3,2081]
 
 class wave():
     def __init__(self, freq, amp, strt, end=None) -> None:
@@ -27,11 +27,12 @@ class wave():
         print(" it is", freq, amp, strt, end)
         # returns list of factors, maybe change to direct objects
         self.side_effects = self.check_effects()
+        print("made up of", self.side_effects)
 
     def check_effects(self):
         noted_factors = []
         for factor in key_factors:
-            if self.freq % factor == 0: # has this number as a factor
+            if self.freq % factor == 0 and self.freq > 0: # has this number as a factor
                 noted_factors.append(factor)
         return noted_factors
 
@@ -57,7 +58,11 @@ def ascii_wave(amp, death=False):
     global wave_prog
     if death:
         return
-    print(chr(int(get_waves_value() * amp)), end='')
+    print("ascii on", int(get_waves_value() * amp))
+    try:
+        print(chr(int(get_waves_value() * amp)), end='')
+    except ValueError:
+        return
 
 # if value > amp will activate nullify, once is recycled will be deactivated
 def nullify_wave(amp, death=False):
@@ -97,10 +102,6 @@ def increment_wave(amp, death=False):
         progress_incr = default_incr
     progress_incr = amp
 
-wave_dict = {2 : print_wave,
-           3 : nullify_wave
-}
-
 def recycle_check():
     def chronofix(wave_list):
         i=0
@@ -125,7 +126,7 @@ def recycle_check():
 def advance_waves():
     global wave_prog, progress_incr, new_waves, active_waves
 
-    print("advancing")
+    #print("advancing")
     wave_prog += progress_incr
 
     #first add any new waves that whose start time is later than or equal wave_prog
@@ -154,7 +155,7 @@ def get_waves_value():
 
 def do_wave_side_effects():
     global active_waves
-    print("side effects")
+    #print("side effects")
 
     for wave in active_waves:
         i = 0
@@ -166,14 +167,6 @@ def do_wave_side_effects():
                 del wave.side_effects[i]
                 continue
             i+=1
-
-#for each key factor check if is factor of num
-def get_factors(num):
-    factors = []
-    for factor in key_factors:
-        if num % factor == 0:
-            factors.append(factor)
-    return factors
 
 def add_wave(freq, amp, strt, end=None):
     if strt <= wave_prog:
@@ -197,8 +190,17 @@ def run_program():
             do_wave_side_effects()
         sanity+=1
 
+wave_dict = {
+    2 : print_wave,
+    3: ascii_wave,
+    5 : nullify_wave,
+    7: jump_wave,
+    11: increment_wave,
+    2081: death_wave
+}
 
-line_form = re.compile(r"^\d+\.?(?:\d+)?, \d+\.?(?:\d+)?, \d+\.?(?:\d+)?(?:, \d+\.?(?:\d+)?)?$")
+key_factors = list(wave_dict.keys())
+line_form = re.compile(r"^-?\d+\.?(?:\d+)?, -?\d+\.?(?:\d+)?, -?\d+\.?(?:\d+)?(?:, -?\d+\.?(?:\d+)?)?$")
 
 def read_str(the_str):
     lines = str.splitlines(the_str)
@@ -212,10 +214,15 @@ def read_str(the_str):
     run_program()
 
 # freq, amp, strt, end
+# test_str = """
+# 10, 3, 0, 12
+# test here
+# 3, 0.2, 1, 5
+# """
+#ascii test
 test_str = """
-10, 3, 0, 12
-test here
-3, 0.2, 1, 5
+3, 1, 0, 4
+-17, 2, 0, 5
 """
 
 read_str(test_str)
